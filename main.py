@@ -8,10 +8,8 @@ import os
 import re
 import httpx
 
-# 插件配置区
-API_BASE_URL = "https://api.zangxin.icu"  # 本项目后端服务地址
+# 插件接口常量配置
 RECHARGE_API_PATH = "/api/internal/award-points-by-email"
-PLUGIN_RECHARGE_KEY = "zangxin_astrbot_recharge_key_2026"  # 与后端 config.py 一致
 
 # 运势及宜忌数据源（已完全去技术化，专注于情感陪伴、校园恋爱与青春日常）
 events_list = [
@@ -89,6 +87,24 @@ class DailyAcmFortune(Star):
         self.data_dir = "data/dailyacmfortune"
         self.record_file = os.path.join(self.data_dir, "daily_checkins.json")
         os.makedirs(self.data_dir, exist_ok=True)
+
+        # 默认回退值配置，若在 Github 仓库上可将 secret key 修改为默认防扫描占位符
+        self.api_base_url = "https://127.0.0.1"
+        self.plugin_recharge_key = "test"
+
+        # 动态尝试从 AstrBot 可视化管理面板读取用户输入的配置，达到防泄露效果
+        config_data = {}
+        if hasattr(self, "config") and self.config:
+            config_data = self.config
+        elif hasattr(self.context, "config") and self.context.config:
+            config_data = self.context.config
+        elif hasattr(self.context, "image") and hasattr(self.context.image, "config") and self.context.image.config:
+            config_data = self.context.image.config
+
+        if "api_base_url" in config_data and config_data["api_base_url"]:
+            self.api_base_url = config_data["api_base_url"].strip()
+        if "plugin_recharge_key" in config_data and config_data["plugin_recharge_key"]:
+            self.plugin_recharge_key = config_data["plugin_recharge_key"].strip()
 
     def _load_records(self) -> dict:
         if os.path.exists(self.record_file):
@@ -169,11 +185,11 @@ class DailyAcmFortune(Star):
         ji_list = shuffled_events[2:4]
 
         # 3. 向后端发起充值请求
-        recharge_url = f"{API_BASE_URL.rstrip('/')}{RECHARGE_API_PATH}"
+        recharge_url = f"{self.api_base_url.rstrip('/')}{RECHARGE_API_PATH}"
         payload = {
             "email": email,
             "points": points,
-            "secret_key": PLUGIN_RECHARGE_KEY
+            "secret_key": self.plugin_recharge_key
         }
 
         yield event.plain_result(f"🔄 正在为您的账户 {email} 处理打卡与运势结算...")
