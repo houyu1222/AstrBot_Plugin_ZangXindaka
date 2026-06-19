@@ -121,7 +121,7 @@ class DailyAcmFortune(Star):
     @filter.event_message_type(filter.EventMessageType.ALL)
     async def daily_checkin(self, event: AstrMessageEvent):
         message_str = event.message_str.strip()
-        match = re.match(r"^(?:/|!)?打卡\s*([\w\.-]+@[\w\.-]+\.\w+)$", message_str, re.IGNORECASE)
+        match = re.match(r"^(?:/|!)?打卡\s*([\w\.\-\+]+@[\w\.-]+\.\w+)$", message_str, re.IGNORECASE)
         if not match:
             return
 
