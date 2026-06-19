@@ -1,0 +1,6 @@
+name: astrbot_plugin_dailyacmfortune_zangxingai # 这是你的插件的唯一识别名。
+display_name: 葬心ai
+desc: 葬心ai洛谷运势生成和签到打卡 # 插件简短描述
+version: v1.0.2 # 插件版本号。格式：v1.1.1 或者 v1.1
+author: Dayanshifu/二改yu # 作者
+repo: https://github.com/Dayanshifu/astrbot_plugin_dailyacmfortune # 插件的仓库地址
