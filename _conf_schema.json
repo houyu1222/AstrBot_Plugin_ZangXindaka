@@ -2,7 +2,7 @@
   "api_base_url": {
     "type": "string",
     "description": "Zangxin 本项目后端服务 API 地址，如 http://[IP_ADDRESS]",
-    "default": "http://[IP_ADDRESS]"
+    "default": "http://127.0.0.1:8000"
   },
   "plugin_recharge_key": {
     "type": "string",

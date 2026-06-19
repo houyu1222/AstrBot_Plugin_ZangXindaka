@@ -1,6 +1,6 @@
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
-from astrbot.api import logger
+from astrbot.api import logger, AstrBotConfig
 import random
 from datetime import datetime, timezone, timedelta
 import json
@@ -82,29 +82,22 @@ fortune_levels = [
 
 @register("astrbot_plugin_dailyacmfortune_zangxingai", "Dayanshifu & Zangxin", "二改洛谷运势插件：打卡自动充值点数且限一日一次", "1.2.0")
 class DailyAcmFortune(Star):
-    def __init__(self, context: Context):
+    def __init__(self, context: Context, config: AstrBotConfig = None):
         super().__init__(context)
         self.data_dir = "data/dailyacmfortune"
         self.record_file = os.path.join(self.data_dir, "daily_checkins.json")
         os.makedirs(self.data_dir, exist_ok=True)
 
         # 默认回退值配置，若在 Github 仓库上可将 secret key 修改为默认防扫描占位符
-        self.api_base_url = "https://127.0.0.1"
+        self.api_base_url = "http://127.0.0.1:8000"
         self.plugin_recharge_key = "test"
 
-        # 动态尝试从 AstrBot 可视化管理面板读取用户输入的配置，达到防泄露效果
-        config_data = {}
-        if hasattr(self, "config") and self.config:
-            config_data = self.config
-        elif hasattr(self.context, "config") and self.context.config:
-            config_data = self.context.config
-        elif hasattr(self.context, "image") and hasattr(self.context.image, "config") and self.context.image.config:
-            config_data = self.context.image.config
-
-        if "api_base_url" in config_data and config_data["api_base_url"]:
-            self.api_base_url = config_data["api_base_url"].strip()
-        if "plugin_recharge_key" in config_data and config_data["plugin_recharge_key"]:
-            self.plugin_recharge_key = config_data["plugin_recharge_key"].strip()
+        # 直接使用 AstrBot 官方推荐注入的配置，优雅又防泄漏
+        if config:
+            if "api_base_url" in config and config["api_base_url"]:
+                self.api_base_url = config["api_base_url"].strip()
+            if "plugin_recharge_key" in config and config["plugin_recharge_key"]:
+                self.plugin_recharge_key = config["plugin_recharge_key"].strip()
 
     def _load_records(self) -> dict:
         if os.path.exists(self.record_file):
@@ -185,6 +178,14 @@ class DailyAcmFortune(Star):
         ji_list = shuffled_events[2:4]
 
         # 3. 向后端发起充值请求
+        # 校验是否使用了默认的未配置占位符
+        if not self.api_base_url or "[IP_ADDRESS]" in self.api_base_url or self.api_base_url.strip() in ["http://", "https://"]:
+            yield event.plain_result(
+                "⚠️ 充值失败：打卡插件的“后端服务地址”未正确配置！\n"
+                "请登录 AstrBot 可视化管理面板进入插件设置，将“后端服务地址”修改为您真实的后端服务器 IP 及其端口（例如 http://127.0.0.1:8000）。"
+            )
+            return
+
         recharge_url = f"{self.api_base_url.rstrip('/')}{RECHARGE_API_PATH}"
         payload = {
             "email": email,
@@ -195,7 +196,7 @@ class DailyAcmFortune(Star):
         yield event.plain_result(f"🔄 正在为您的账户 {email} 处理打卡与运势结算...")
         
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
                 res = await client.post(recharge_url, json=payload)
                 if res.status_code == 200:
                     data = res.json()
