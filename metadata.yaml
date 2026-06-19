@@ -4,15 +4,3 @@ desc: 葬心ai洛谷运势生成和签到打卡 # 插件简短描述
 version: v1.0.2 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: Dayanshifu/二改yu # 作者
 repo: https://github.com/Dayanshifu/astrbot_plugin_dailyacmfortune # 插件的仓库地址
-
-config_schema:
-  api_base_url:
-    name: "后端服务地址"
-    description: "Zangxin 本项目后端服务 API 地址，如 https://api.zangxin.icu"
-    type: string
-    default: "https://api.zangxin.icu"
-  plugin_recharge_key:
-    name: "充值验证密钥"
-    description: "与后端部署的 config.py 中的 PLUGIN_RECHARGE_KEY 密钥一致"
-    type: string
-    default: "zangxin_astrbot_recharge_key_2026"

@@ -1,0 +1,12 @@
+{
+  "api_base_url": {
+    "type": "string",
+    "description": "Zangxin 本项目后端服务 API 地址，如 http://[IP_ADDRESS]",
+    "default": "http://[IP_ADDRESS]"
+  },
+  "plugin_recharge_key": {
+    "type": "string",
+    "description": "与后端部署的 config.py 中的 PLUGIN_RECHARGE_KEY 密钥一致",
+    "default": "test"
+  }
+}
